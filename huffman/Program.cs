@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace huffman
 {
@@ -13,7 +14,7 @@ namespace huffman
             
             // Count the the occurrences of each letter in the input
             var dict = new Dictionary<string, int>();
-            foreach (var key in input.Select(ch => ch.ToString().ToLower()))
+            foreach (var key in input.Where(char.IsLetterOrDigit).Select(ch => ch.ToString().ToLower()))
             {
                 if (dict.Keys.Contains(key))
                     dict[key]++;
