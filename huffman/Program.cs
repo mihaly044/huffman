@@ -21,6 +21,7 @@ namespace huffman
                     dict[key] = 1;
             }
             
+            // This helps me see how the tree is built
             string Kvp2Str(IEnumerable<KeyValuePair<string, int>> kvp)
             {
                 var sb = new StringBuilder();
@@ -31,13 +32,18 @@ namespace huffman
 
                 return sb.ToString();
             }
-
+            
+            // Build the binary tree
             Node parent = null;
             while (dict.Count > 1)
             {
+                // Take max two minimum elements
                 var mins = dict.OrderBy(x => x.Value).Take(2).ToList();
+                
+                // Get data for a parent node
                 var (parentValue, parentSymbol) = Huffman.ConstructParentNodeProps(mins);
                 
+                // Print out which nodes gets connected
                 Console.WriteLine(Kvp2Str(mins) + $"\t{parentSymbol} {parentValue}");
 
                 if (parent == null)
@@ -48,7 +54,6 @@ namespace huffman
                         Symbol = parentSymbol
                     };
 
-                    
                     parent.Left = new Node
                     {
                         Value = mins[0].Value,
