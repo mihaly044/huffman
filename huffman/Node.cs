@@ -9,7 +9,9 @@ namespace huffman
         public Node Right { get; set; }
         public string Symbol { get; set; }
         public Node Parent { get; set; }
-        public bool IsLeaf { get; set; }
+
+        public bool IsLeaf => Left == null && Right == null;
+
         public string Path { get; set; }
     }
 
@@ -21,9 +23,7 @@ namespace huffman
                 return;
             
             node.Path = path;
-            node.IsLeaf = node.Left == null && node.Right == null;
             
-
             SetCodes(node.Left, path + "0");
             SetCodes(node.Right, path + "1");
         }
@@ -33,7 +33,7 @@ namespace huffman
             if (node == null)
                 return;
 
-            if(node.Symbol.Length == 1)
+            if(node.IsLeaf)
                 Console.WriteLine($"{node.Symbol} [=] {node.Path}");
             
             Traverse(node.Left);
