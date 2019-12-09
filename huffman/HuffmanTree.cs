@@ -1,14 +1,24 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace huffman
 {
+    /// <summary>
+    /// A class designed to Huffman-encode strings.
+    /// </summary>
     public class HuffmanTree
     {
         public HuffmanNode Root { get; private set; }
 
+        /// <summary>
+        /// Builds a huffman tree based on an input string.
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <returns>The current instance of a <see cref="HuffmanTree"/>.</returns>
+        /// <exception cref="InvalidOperationException">When a tree has already been built.</exception>
         public HuffmanTree Build(string input)
         {
             if (Root != null)
@@ -60,6 +70,12 @@ namespace huffman
             return this;
         }
         
+        /// <summary>
+        /// Traverse the tree while setting the Path values of each node
+        /// </summary>
+        /// <param name="root"></param>
+        /// <param name="recursionDepth"></param>
+        /// <param name="path"></param>
         private void SetCodes(HuffmanNode root = null, int recursionDepth = 0, string path = "")
         {
             if (root == null)
@@ -70,12 +86,24 @@ namespace huffman
                     return;
             }
 
-            root.Path = path;
+            root.Path = new BitArray(path
+                .Select(x => x == '1')
+                .ToArray());
             
             SetCodes(root.Left, ++recursionDepth, path + "0");
             SetCodes(root.Right, ++recursionDepth, path + "1");
         }
         
+        /// <summary>
+        /// Recursively search a specific value in the tree
+        /// </summary>
+        /// <param name="value">The value to be searched for.</param>
+        /// <param name="root">The root <see cref="HuffmanNode"/> from where the search begins.</param>
+        /// <param name="recursionDepth">Specifies how deep we are in the call stack.
+        /// It lets us decide whether it has been called for the first time or are we
+        /// deeper in the call stack.
+        /// </param>
+        /// <returns>The corresponding node with the value or null if there isn't such node.</returns>
         public HuffmanNode Search(int value, HuffmanNode root = null, int recursionDepth = 0)
         {
             if (root == null)
@@ -95,6 +123,15 @@ namespace huffman
             return Search(value, root.Left) ?? Search(value, root.Right, recursionDepth);
         }
         
+        /// <summary>
+        /// Returns an ordered <see cref="IEnumerable"/> of all the nodes.
+        /// </summary>
+        /// <param name="root">The starting node to begin traversing from.</param>
+        /// <param name="recursionDepth">Specifies how deep we are in the call stack.
+        /// It lets us decide whether it has been called for the first time or are we
+        /// deeper in the call stack.
+        /// </param>
+        /// <returns></returns>
         public IEnumerable<HuffmanNode> OrderedNodes(HuffmanNode root = null, int recursionDepth = 0)
         {
             if (root == null)
@@ -118,28 +155,46 @@ namespace huffman
                 yield return node;
             }
         }
-
-        public string Encode(string message)
+        
+        /// <summary>
+        /// Encodes a string based on the previously built tree.
+        /// </summary>
+        /// <param name="message">The input string to be encoded.</param>
+        /// <returns>A string containing the decoded message.</returns>
+        /// <exception cref="InvalidOperationException">If the tree is empty.</exception>
+        public BitArray Encode(string message)
         {
-            var encoded = new StringBuilder();
+            if(Root == null)
+                throw new InvalidOperationException("The tree has not been built yet.");
+            
+            var bits = new List<bool>();
             var nodes = OrderedNodes()
                 .ToArray();
 
             foreach (var c in message)
             {
-                encoded.Append(nodes
-                    .First(x => x.Symbol == c.ToString() && x.Leaf).Path);
+                bits.AddRange(nodes
+                    .First(x => x.Symbol == c.ToString() && x.Leaf).Path
+                    .Cast<bool>());
             }
-
-            return encoded.ToString();
+            
+            return new BitArray(bits.ToArray());
         }
-
-        public string Decode(string message)
+        
+        /// <summary>
+        /// Decodes a <see cref="BitArray"/> to it's corresponding message.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public string Decode(BitArray input)
         {
+            if(Root == null)
+                throw new InvalidOperationException("The tree has not been built yet.");
+            
             var root = Root;
             var decoded = new StringBuilder();
             
-            foreach (var b in message.Select(x => x == '1'))
+            foreach (bool b in input)
             {
                 root = b ? root.Right : root.Left;
 
