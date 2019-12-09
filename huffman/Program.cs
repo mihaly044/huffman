@@ -1,104 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace huffman
 {
-    class Program
+    internal static class Program
     {
         static void Main(string[] args)
         {
-            const string input = "aaaaabbbbbbbbccccccccccccddddddddddddddddddddeeeef";
-            
-            // Count the the occurrences of each letter in the input
-            var dict = new Dictionary<string, int>();
-            foreach (var key in input.Where(char.IsLetterOrDigit).Select(ch => ch.ToString().ToLower()))
+            if (args.Length < 1 || args[0] == string.Empty)
             {
-                if (dict.Keys.Contains(key))
-                    dict[key]++;
-                else
-                    dict[key] = 1;
+                Console.WriteLine("Please specify an input parameter.");
+                return;
             }
             
-            // This helps me see how the tree is built
-            string Kvp2Str(IEnumerable<KeyValuePair<string, int>> kvp)
-            {
-                var sb = new StringBuilder();
-                sb.Append($"{kvp.ElementAt(0).Key} {kvp.ElementAt(0).Value}");
-                
-                if(kvp.Count() > 1)
-                    sb.Append($" - {kvp.ElementAt(1).Key} {kvp.ElementAt(1).Value}");
-
-                return sb.ToString();
-            }
+            var orig = args[0];
             
-            // Build the binary tree
-            Node parent = null;
-            while (dict.Count > 1)
-            {
-                // Take max two minimum elements
-                var mins = dict.OrderBy(x => x.Value).Take(2).ToList();
-                
-                // Get data for a parent node
-                var (parentValue, parentSymbol) = Huffman.ConstructParentNodeProps(mins);
-                
-                // Print out which nodes gets connected
-                Console.WriteLine(Kvp2Str(mins) + $"\t{parentSymbol} {parentValue}");
-
-                if (parent == null)
-                {
-                    parent = new Node
-                    {
-                        Value = parentValue,
-                        Symbol = parentSymbol
-                    };
-
-                    parent.Left = new Node
-                    {
-                        Value = mins[0].Value,
-                        Symbol = mins[0].Key,
-                        Parent = parent
-                    };
-                    
-                    parent.Right = new Node
-                    {
-                        Value = mins[1].Value,
-                        Symbol = mins[1].Key,
-                        Parent = parent
-                    };
-                }
-                else 
-                {
-                    var newParent = new Node
-                    {
-                        Right = parent,
-                        Symbol = parentSymbol,
-                        Value = parentValue
-                    };
-
-                    newParent.Left = new Node
-                    {
-                        Parent = newParent,
-                        Symbol = mins[0].Key,
-                        Value = mins[0].Value
-                    };
-
-                    parent.Parent = newParent;
-                    parent = newParent;
-                }
-                
-                dict.Remove(mins[0].Key);
-                if (mins.Count <= 1) 
-                    continue;
-                dict.Remove(mins[1].Key);
-                dict.Add(parentSymbol, parentValue);
-            }
+            var hf = new HuffmanTree()
+                .Build(orig);
             
-            Console.WriteLine("\nTraversing:");
+            var encoded = hf.Encode(orig);
+            var decoded = hf.Decode(encoded);
+
+            Console.WriteLine($"Original message: {orig}");
+            Console.WriteLine($"Encoded message: {encoded}");
+            Console.WriteLine($"Decoded message: {decoded}");
             
-            parent.SetCodes();
-            parent.Traverse();
+            hf.Root.Print();
         }
     }
 }
