@@ -23,7 +23,7 @@ namespace huffman
             Console.WriteLine($"Original message: {orig}");
             Console.WriteLine($"Encoded message: {encoded.ToBinaryString()}");
             Console.WriteLine($"Decoded message: {decoded}");
-            
+
             hf.Root.Print();
         }
     }
